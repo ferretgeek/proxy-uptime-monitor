@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <clipPath id="screen">
+      <rect x="514" y="74" width="700" height="492" rx="22"/>
+    </clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity=".36"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="640" fill="#162033"/>
+  <circle cx="1090" cy="-50" r="290" fill="#243f70" opacity=".42"/>
+  <circle cx="280" cy="690" r="300" fill="#0f766e" opacity=".16"/>
+  <g transform="translate(70 70)">
+    <rect width="64" height="64" rx="16" fill="#f8fafc"/>
+    <circle cx="32" cy="32" r="20" fill="none" stroke="#2563eb" stroke-width="3"/>
+    <circle cx="32" cy="32" r="11" fill="none" stroke="#2563eb" stroke-width="3" opacity=".58"/>
+    <path d="M32 32 47 20M32 10v44M10 32h44" stroke="#172033" stroke-width="2" stroke-linecap="round" opacity=".78"/>
+    <circle cx="32" cy="32" r="4" fill="#0b8f72"/>
+  </g>
+  <text x="70" y="196" fill="#f8fafc" font-family="Microsoft YaHei UI, Segoe UI, sans-serif" font-size="66" font-weight="800">航迹</text>
+  <text x="70" y="246" fill="#9fb4d5" font-family="Microsoft YaHei UI, Segoe UI, sans-serif" font-size="25" font-weight="600">机场订阅实际可用度监测平台</text>
+  <text x="70" y="326" fill="#e8eef8" font-family="Microsoft YaHei UI, Segoe UI, sans-serif" font-size="30" font-weight="700">让每条代理线路</text>
+  <text x="70" y="370" fill="#e8eef8" font-family="Microsoft YaHei UI, Segoe UI, sans-serif" font-size="30" font-weight="700">用真实网站访问证明自己</text>
+  <g font-family="Microsoft YaHei UI, Segoe UI, sans-serif" font-size="18" font-weight="600">
+    <rect x="70" y="438" width="126" height="42" rx="10" fill="#253b63"/>
+    <text x="94" y="466" fill="#cfe0fb">独立通道</text>
+    <rect x="208" y="438" width="126" height="42" rx="10" fill="#1d4743"/>
+    <text x="232" y="466" fill="#c7eee8">页面验证</text>
+    <rect x="346" y="438" width="126" height="42" rx="10" fill="#4b3424"/>
+    <text x="370" y="466" fill="#f8ddc7">多周期趋势</text>
+  </g>
+  <text x="70" y="548" fill="#8799b6" font-family="Segoe UI, sans-serif" font-size="18">Python · FastAPI · SQLite · systemd</text>
+  <g filter="url(#shadow)">
+    <rect x="504" y="64" width="720" height="512" rx="28" fill="#f8fafc" opacity=".12"/>
+    <image x="514" y="74" width="700" height="492" preserveAspectRatio="xMidYMid slice" clip-path="url(#screen)" xlink:href="dashboard.png"/>
+  </g>
+</svg>

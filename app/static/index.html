@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="sky">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f4f8ff">
+    <meta name="description" content="机场订阅节点实际可用度监测控制台">
+    <title>航迹｜节点实际可用度监测</title>
+    <script src="/static/theme.js?v=2.4.0"></script>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="stylesheet" href="/static/app.css?v=2.4.0">
+  </head>
+  <body>
+    <div id="boot-screen" class="boot-screen" aria-live="polite">
+      <span class="boot-orbit" aria-hidden="true"><i></i></span>
+      <p>正在读取节点状态</p>
+    </div>
+
+    <section id="login-view" class="login-view" hidden>
+      <div class="login-atmosphere" aria-hidden="true"></div>
+      <div class="login-brand">
+        <span class="brand-mark"><i data-lucide="radar"></i></span>
+        <span><strong>航迹</strong><small>节点实际可用度监测</small></span>
+      </div>
+      <div class="login-copy">
+        <p class="eyebrow">局域网链路观测</p>
+        <h1>看见代理线路<br>真正抵达的地方</h1>
+        <p>每个节点建立独立代理通道，综合 DNS、TCP、TLS、页面特征、跳转与延迟判断真实可用性。</p>
+        <div class="login-proof">
+          <span><i data-lucide="route"></i>独立通道</span>
+          <span><i data-lucide="scan-search"></i>页面验证</span>
+          <span><i data-lucide="shield-check"></i>局域网保护</span>
+        </div>
+      </div>
+      <form id="login-form" class="login-panel" autocomplete="on">
+        <div class="login-panel-head">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>受保护的管理入口</span>
+          <div class="theme-picker" data-theme-picker>
+            <button class="icon-button theme-trigger" type="button" data-theme-trigger aria-label="选择界面主题" title="选择界面主题" aria-haspopup="menu" aria-expanded="false">
+              <i data-lucide="palette"></i>
+            </button>
+            <div class="theme-menu" data-theme-menu role="menu" aria-label="界面主题" hidden>
+              <p>界面主题</p>
+              <button type="button" role="menuitemradio" data-theme-option="sky"><span class="theme-swatch theme-swatch-sky"></span><span><strong>天际蓝</strong><small>清透、理性</small></span><i data-lucide="check"></i></button>
+              <button type="button" role="menuitemradio" data-theme-option="jade"><span class="theme-swatch theme-swatch-jade"></span><span><strong>青岚绿</strong><small>舒缓、自然</small></span><i data-lucide="check"></i></button>
+              <button type="button" role="menuitemradio" data-theme-option="sunset"><span class="theme-swatch theme-swatch-sunset"></span><span><strong>霞光橙</strong><small>温暖、明快</small></span><i data-lucide="check"></i></button>
+              <button type="button" role="menuitemradio" data-theme-option="dark"><span class="theme-swatch theme-swatch-dark"></span><span><strong>深灰夜色</strong><small>克制、专注</small></span><i data-lucide="check"></i></button>
+            </div>
+          </div>
+        </div>
+        <h2>登录观测台</h2>
+        <p>使用部署时生成的管理员凭据。</p>
+        <label class="field">
+          <span>管理员账号</span>
+          <span class="field-control"><i data-lucide="user-round"></i><input id="login-username" name="username" type="text" value="admin" required maxlength="64" autocomplete="username"></span>
+        </label>
+        <label class="field">
+          <span>管理员密码</span>
+          <span class="field-control">
+            <i data-lucide="key-round"></i>
+            <input id="login-password" name="password" type="password" required maxlength="256" autocomplete="current-password">
+            <button class="icon-button field-action" type="button" id="toggle-password" aria-label="显示密码"><i data-lucide="eye"></i></button>
+          </span>
+        </label>
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+        <button id="login-submit" class="button button-primary button-wide" type="submit"><span>安全登录</span><i data-lucide="arrow-right"></i></button>
+        <p class="login-footnote"><i data-lucide="lock-keyhole"></i>会话仅保存在当前浏览器，30 天后自动失效。</p>
+      </form>
+    </section>
+
+    <div id="app-shell" class="app-shell" hidden>
+      <aside class="side-rail">
+        <a class="rail-brand" href="#dashboard" aria-label="返回节点态势首页">
+          <span class="brand-mark"><i data-lucide="radar"></i></span>
+          <span><strong>航迹</strong><small>链路观测</small></span>
+        </a>
+        <nav class="rail-nav" aria-label="主导航">
+          <button class="rail-link is-active" type="button" data-view="dashboard" aria-label="节点态势" title="节点态势"><i data-lucide="rows-3"></i><span>节点态势</span></button>
+          <button class="rail-link" type="button" data-view="latency" aria-label="延迟统计" title="延迟统计"><i data-lucide="chart-spline"></i><span>延迟统计</span></button>
+          <button class="rail-link" type="button" data-view="nodes" aria-label="节点管理" title="节点管理"><i data-lucide="waypoints"></i><span>节点管理</span></button>
+          <button class="rail-link" type="button" data-view="subscriptions" aria-label="订阅管理" title="订阅管理"><i data-lucide="rss"></i><span>订阅</span></button>
+          <button class="rail-link" type="button" data-view="events" aria-label="事件记录" title="事件记录"><i data-lucide="bell-ring"></i><span>事件</span></button>
+          <button class="rail-link" type="button" data-view="system" aria-label="系统状态与设置" title="系统状态与设置"><i data-lucide="gauge"></i><span>系统</span></button>
+        </nav>
+        <div class="rail-foot">
+          <span id="rail-status" class="rail-status" role="status" aria-label="监测服务运行正常" title="监测服务运行正常"><i data-lucide="circle-check"></i><span>服务正常</span></span>
+          <span class="rail-version">2.4.0</span>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="topbar-title">
+            <p id="view-kicker">实时节点观测</p>
+            <h1 id="view-title">节点态势</h1>
+          </div>
+          <div class="topbar-actions">
+            <div id="task-indicator" class="task-indicator" hidden><span class="task-pulse"></span><span id="task-indicator-text">检测进行中</span></div>
+            <div class="theme-picker" data-theme-picker>
+              <button class="icon-button theme-trigger" type="button" data-theme-trigger aria-label="选择界面主题" title="选择界面主题" aria-haspopup="menu" aria-expanded="false"><i data-lucide="palette"></i></button>
+              <div class="theme-menu" data-theme-menu role="menu" aria-label="界面主题" hidden>
+                <p>界面主题</p>
+                <button type="button" role="menuitemradio" data-theme-option="sky"><span class="theme-swatch theme-swatch-sky"></span><span><strong>天际蓝</strong><small>清透、理性</small></span><i data-lucide="check"></i></button>
+                <button type="button" role="menuitemradio" data-theme-option="jade"><span class="theme-swatch theme-swatch-jade"></span><span><strong>青岚绿</strong><small>舒缓、自然</small></span><i data-lucide="check"></i></button>
+                <button type="button" role="menuitemradio" data-theme-option="sunset"><span class="theme-swatch theme-swatch-sunset"></span><span><strong>霞光橙</strong><small>温暖、明快</small></span><i data-lucide="check"></i></button>
+                <button type="button" role="menuitemradio" data-theme-option="dark"><span class="theme-swatch theme-swatch-dark"></span><span><strong>深灰夜色</strong><small>克制、专注</small></span><i data-lucide="check"></i></button>
+              </div>
+            </div>
+            <button class="user-button" id="user-menu-button" type="button" aria-expanded="false" aria-label="打开管理员菜单" title="管理员菜单">
+              <span class="user-avatar">管</span>
+              <span class="user-copy"><small>管理员</small><strong id="current-user">admin</strong></span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div id="user-menu" class="user-menu" role="menu" aria-labelledby="user-menu-button" hidden>
+              <button type="button" id="logout-button" role="menuitem"><i data-lucide="log-out"></i>退出登录</button>
+            </div>
+          </div>
+        </header>
+
+        <div id="view-root" class="view-root" tabindex="-1">
+          <section id="page-dashboard" class="page is-active" data-page="dashboard" aria-label="节点态势">
+            <div id="dashboard-content" class="loading-layout"></div>
+          </section>
+          <section id="page-latency" class="page" data-page="latency" aria-label="多周期延迟统计">
+            <div id="latency-content" class="loading-layout"></div>
+          </section>
+          <section id="page-nodes" class="page" data-page="nodes" aria-label="节点管理">
+            <div id="nodes-content" class="loading-layout"></div>
+          </section>
+          <section id="page-subscriptions" class="page" data-page="subscriptions" aria-label="订阅管理">
+            <div id="subscriptions-content" class="loading-layout"></div>
+          </section>
+          <section id="page-events" class="page" data-page="events" aria-label="异常与恢复事件">
+            <div id="events-content" class="loading-layout"></div>
+          </section>
+          <section id="page-system" class="page" data-page="system" aria-label="系统状态与设置">
+            <div id="system-content" class="loading-layout"></div>
+          </section>
+        </div>
+      </main>
+
+      <nav class="mobile-nav" aria-label="移动端主导航">
+        <button class="is-active" type="button" data-view="dashboard"><i data-lucide="rows-3"></i><span>态势</span></button>
+        <button type="button" data-view="latency"><i data-lucide="chart-spline"></i><span>延迟</span></button>
+        <button type="button" data-view="nodes"><i data-lucide="waypoints"></i><span>节点</span></button>
+        <button type="button" data-view="subscriptions"><i data-lucide="rss"></i><span>订阅</span></button>
+        <button type="button" data-view="events"><i data-lucide="bell-ring"></i><span>事件</span></button>
+        <button type="button" data-view="system"><i data-lucide="gauge"></i><span>系统</span></button>
+      </nav>
+    </div>
+
+    <div id="modal-root"></div>
+    <div id="tooltip-root" class="chart-tooltip" role="tooltip" hidden></div>
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="/static/vendor/lucide.min.js?v=2.4.0"></script>
+    <script src="/static/app.js?v=2.4.0"></script>
+  </body>
+</html>

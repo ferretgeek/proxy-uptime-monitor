@@ -1,0 +1,13 @@
+[Unit]
+Description=定时执行航迹监测平台容量保护
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+RandomizedDelaySec=8min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

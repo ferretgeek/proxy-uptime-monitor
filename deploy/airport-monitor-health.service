@@ -1,0 +1,24 @@
+[Unit]
+Description=航迹监测平台健康检查
+After=airport-monitor.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sh -c 'test ! -d /run/airport-monitor || exec /usr/bin/python3 /usr/local/lib/airport-monitor/hardware_probe.py'
+ExecStart=/usr/local/lib/airport-monitor/healthcheck.sh
+RuntimeDirectory=airport-monitor-health
+RuntimeDirectoryMode=0700
+Nice=15
+CPUQuota=10%
+MemoryMax=64M
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/run/airport-monitor-health -/run/airport-monitor
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes

@@ -1,0 +1,49 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime state and secrets
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+*.pid
+*.key
+*.pem
+*.p12
+*.token
+*凭据*.txt
+*密码*.txt
+服务器.txt
+
+# Local validation and private deployment
+.local-*/
+.deploy-private/
+artifacts/
+release/
+backups/
+runtime/
+data/
+logs/
+.vendor-staging-*/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Packages
+*.tar.gz
+*.zip

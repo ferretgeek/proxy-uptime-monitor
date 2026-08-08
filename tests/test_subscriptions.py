@@ -100,7 +100,7 @@ proxies:
     assert len(nodes) == 1
     node = nodes[0]
     assert node.protocol == "anytls"
-    assert node.outbound["password"] == "test-only"
+    assert node.outbound["password"] == "test-only"  # pragma: allowlist secret
     assert node.outbound["tls"]["server_name"] == "front.example.com"
     assert node.outbound["idle_session_check_interval"] == "30s"
     assert node.outbound["idle_session_timeout"] == "30s"

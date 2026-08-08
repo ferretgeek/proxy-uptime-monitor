@@ -33,7 +33,7 @@ function Set-OwnerOnlyAcl {
 $random = [byte[]]::new(24)
 [System.Security.Cryptography.RandomNumberGenerator]::Fill($random)
 $body = [Convert]::ToBase64String($random).TrimEnd('=').Replace('+', 'A').Replace('/', 'z')
-$password = "Am9!${body}"
+$password = "Am9!${body}" # pragma: allowlist secret -- generated from CSPRNG bytes
 
 $credentialFullPath = [System.IO.Path]::GetFullPath($CredentialPath)
 $passwordFullPath = [System.IO.Path]::GetFullPath($PasswordOnlyPath)

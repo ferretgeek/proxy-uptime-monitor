@@ -119,6 +119,7 @@ session_pepper="$("$release_directory/.venv/bin/python" -c \
     'import secrets; print(secrets.token_urlsafe(48))')"
 
 environment_file="/etc/airport-monitor/env"
+sing_box_path="/opt/airport-monitor/bin/sing-box"
 umask 0077
 printf '%s\n' \
     "AIRPORT_BIND_HOST=${bind_host}" \
@@ -126,7 +127,7 @@ printf '%s\n' \
     "AIRPORT_DATA_DIR=/var/lib/airport-monitor" \
     "AIRPORT_RUNTIME_DIR=/run/airport-monitor" \
     "AIRPORT_LOG_DIR=/var/log/airport-monitor" \
-    "AIRPORT_SING_BOX=/opt/airport-monitor/bin/sing-box" \
+    "AIRPORT_SING_BOX=${sing_box_path}" \
     "AIRPORT_ENCRYPTION_KEY=${encryption_key}" \
     "AIRPORT_SESSION_PEPPER=${session_pepper}" \
     "AIRPORT_ALLOWED_HOSTS=${bind_host},localhost,127.0.0.1" \

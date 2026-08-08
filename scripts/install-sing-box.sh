@@ -4,7 +4,7 @@ set -euo pipefail
 sing_box_version="1.13.14"
 archive_name="sing-box-${sing_box_version}-linux-amd64.tar.gz"
 download_url="https://github.com/SagerNet/sing-box/releases/download/v${sing_box_version}/${archive_name}"
-expected_sha256="f48703461a15476951ac4967cdad339d986f4b8096b4eb3ff0829a500502d697"
+expected_sha256="f48703461a15476951ac4967cdad339d986f4b8096b4eb3ff0829a500502d697" # pragma: allowlist secret -- public release checksum
 install_path="/opt/airport-monitor/bin/sing-box"
 
 if (( EUID != 0 )); then

@@ -1,0 +1,12 @@
+[Unit]
+Description=定时检查航迹监测平台并在连续失败时恢复
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=2min
+RandomizedDelaySec=25s
+AccuracySec=10s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

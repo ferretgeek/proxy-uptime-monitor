@@ -18,7 +18,9 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install dependencies
-        run: python -m pip install -r requirements-dev.txt pip-audit detect-secrets bandit
+        run: >-
+          python -m pip install -r requirements-dev.txt
+          pip-audit==2.10.1 detect-secrets==1.5.0 bandit==1.9.4
       - name: Compile Python sources
         run: python -m compileall -q app scripts tests
       - name: Run test suite
@@ -35,6 +37,9 @@ jobs:
               report = json.load(handle)
           findings = sum(len(items) for items in report["results"].values())
           if findings:
+              for filename, items in sorted(report["results"].items()):
+                  for item in items:
+                      print(f"{filename}:{item['line_number']}: {item['type']}")
               raise SystemExit(f"detect-secrets found {findings} unresolved result(s)")
           PY
       - name: Run high-severity static security checks

@@ -15,7 +15,7 @@ through that tunnel. DNS, TCP, TLS, redirects, response time, and page features
 are evaluated together to determine whether the destination was actually
 reached.
 
-Current open-source version: `2.4.0`. Original project code is released under
+Current open-source version: `2.4.1`. Original project code is released under
 the [MIT License](LICENSE). Third-party icons, flags, and service marks retain
 their own licenses or rights; see [Third-Party Notices](THIRD_PARTY_NOTICES.md).
 

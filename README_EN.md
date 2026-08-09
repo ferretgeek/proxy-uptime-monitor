@@ -1,4 +1,4 @@
-# Trailmark: Real-World Availability Monitoring for Proxy Subscriptions
+# Trailmark / 航迹 — Proxy Node Availability Monitor
 
 [简体中文](README.md) · [English](README_EN.md)
 

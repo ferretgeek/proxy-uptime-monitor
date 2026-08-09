@@ -4,6 +4,8 @@
 
 ## 2.4.1 - 2026-08-09
 
+- 将中英文 README 标题统一为“项目名 — 核心功能”，直接说明这是代理节点可用性监控工具。
+- Clarified both README titles as “project name — core function” so the proxy-availability purpose is immediately visible.
 - 完整重写全部可达历史：第三方扫描器命中的只是测试函数名与专门验证拒绝逻辑的虚构 URL，不是真实秘密。
 - 永久退役不可变的 `v2.4.0` 标签，以 `v2.4.1` 重新发布；两个独立引擎对完整历史与全部标签均为零结果。
 - 纳入浏览器错误安全渲染、异常脱敏、安全审查修复、界面精修与最终双语文档。

@@ -1,4 +1,4 @@
-# 航迹：机场订阅实际可用度监测平台
+# 航迹 / Trailmark — 代理节点可用性监控
 
 [简体中文](README.md) · [English](README_EN.md)
 

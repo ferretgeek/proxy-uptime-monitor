@@ -789,8 +789,9 @@
 
   function renderLoadError(view, message) {
     const target = $(`#${view}-content`);
-    target.innerHTML = `<div class="state-panel"><span class="state-icon is-error"><i data-lucide="cloud-off"></i></span><h2>内容暂时无法载入</h2><p>${escapeHtml(message)}</p><button class="button button-secondary" type="button" data-retry-view="${view}"><i data-lucide="refresh-cw"></i>重新加载</button></div>`;
-    $("[data-retry-view]", target).addEventListener("click", () => switchView(view, false));
+    target.innerHTML = '<div class="state-panel"><span class="state-icon is-error"><i data-lucide="cloud-off"></i></span><h2>内容暂时无法载入</h2><p></p><button class="button button-secondary" type="button"><i data-lucide="refresh-cw"></i>重新加载</button></div>';
+    $("p", target).textContent = String(message || "未知错误");
+    $("button", target).addEventListener("click", () => switchView(view, false));
     refreshIcons(target);
   }
 

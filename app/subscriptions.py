@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import binascii
-import ipaddress
 import json
 import re
 from dataclasses import dataclass
@@ -11,6 +10,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 import httpx
 import yaml
+from yaml.events import AliasEvent, CollectionEndEvent, CollectionStartEvent
 
 from .security import (
     mask_endpoint,
@@ -18,7 +18,6 @@ from .security import (
     sanitize_exception,
     stable_fingerprint,
 )
-
 
 SUPPORTED_PROTOCOLS = {
     "shadowsocks",
@@ -33,6 +32,10 @@ SUPPORTED_PROTOCOLS = {
 }
 MAX_SUBSCRIPTION_BYTES = 5 * 1024 * 1024
 MAX_NODES = 2000
+MAX_YAML_EVENTS = 50_000
+MAX_YAML_ALIASES = 128
+MAX_YAML_DEPTH = 32
+MAX_EXPANDED_VALUES = 20_000
 URI_PREFIXES = (
     "ss://",
     "vmess://",
@@ -63,6 +66,66 @@ class SubscriptionError(RuntimeError):
         super().__init__(message)
         self.error_type = error_type
         self.safe_message = message
+
+
+def _validate_yaml_events(value: str) -> None:
+    events = 0
+    aliases = 0
+    depth = 0
+    try:
+        for event in yaml.parse(value):
+            events += 1
+            if events > MAX_YAML_EVENTS:
+                raise SubscriptionError("unsafe_subscription", "订阅 YAML 节点过多")
+            if isinstance(event, AliasEvent):
+                aliases += 1
+                if aliases > MAX_YAML_ALIASES:
+                    raise SubscriptionError("unsafe_subscription", "订阅 YAML 别名过多")
+            elif isinstance(event, CollectionStartEvent):
+                depth += 1
+                if depth > MAX_YAML_DEPTH:
+                    raise SubscriptionError("unsafe_subscription", "订阅 YAML 嵌套过深")
+            elif isinstance(event, CollectionEndEvent):
+                depth -= 1
+    except yaml.YAMLError as exc:
+        raise SubscriptionError("parse_error", "订阅 YAML 无法解析") from exc
+
+
+def _bounded_plain_copy(value: Any) -> Any:
+    budget = MAX_EXPANDED_VALUES
+    active: set[int] = set()
+
+    def copy_item(item: Any, depth: int) -> Any:
+        nonlocal budget
+        budget -= 1
+        if budget < 0 or depth > MAX_YAML_DEPTH:
+            raise SubscriptionError("unsafe_subscription", "订阅展开后的结构过大")
+        if isinstance(item, dict):
+            marker = id(item)
+            if marker in active:
+                raise SubscriptionError("unsafe_subscription", "订阅包含循环引用")
+            active.add(marker)
+            try:
+                return {
+                    copy_item(key, depth + 1): copy_item(child, depth + 1)
+                    for key, child in item.items()
+                }
+            finally:
+                active.remove(marker)
+        if isinstance(item, list):
+            marker = id(item)
+            if marker in active:
+                raise SubscriptionError("unsafe_subscription", "订阅包含循环引用")
+            active.add(marker)
+            try:
+                return [copy_item(child, depth + 1) for child in item]
+            finally:
+                active.remove(marker)
+        if isinstance(item, (str, int, float, bool)) or item is None:
+            return item
+        raise SubscriptionError("unsafe_subscription", "订阅包含不支持的数据类型")
+
+    return copy_item(value, 0)
 
 
 def _decode_base64(value: str) -> str:
@@ -608,7 +671,7 @@ def parse_singbox_outbound(
     port = _valid_port(outbound.get("server_port"))
     if not server:
         raise ValueError("sing-box 出站缺少服务器")
-    cleaned = json.loads(json.dumps(outbound))
+    cleaned = _bounded_plain_copy(outbound)
     name = normalize_display_name(str(cleaned.pop("tag", "") or f"{protocol} 节点"))
     for unsafe_key in (
         "detour",
@@ -657,8 +720,7 @@ def parse_subscription_content(text: str, pepper: str) -> tuple[list[NodeCandida
         re.search(r"(?m)^\s*proxies\s*:", decoded)
         or re.search(r"(?m)^\s*outbounds\s*:", decoded)
     ):
-        if decoded.count("&") + decoded.count("*") > 500:
-            raise SubscriptionError("unsafe_subscription", "订阅 YAML 结构过于复杂")
+        _validate_yaml_events(decoded)
         try:
             structured = yaml.safe_load(decoded)
         except yaml.YAMLError as exc:
@@ -685,9 +747,11 @@ def parse_subscription_content(text: str, pepper: str) -> tuple[list[NodeCandida
     for index, item in enumerate(raw_items[:MAX_NODES], start=1):
         try:
             if parser_kind == "clash" and isinstance(item, dict):
-                candidates.append(parse_clash_proxy(item, pepper))
+                candidates.append(parse_clash_proxy(_bounded_plain_copy(item), pepper))
             elif parser_kind == "singbox" and isinstance(item, dict):
-                candidates.append(parse_singbox_outbound(item, pepper))
+                candidates.append(
+                    parse_singbox_outbound(_bounded_plain_copy(item), pepper)
+                )
             elif isinstance(item, str) and item.startswith(URI_PREFIXES):
                 candidates.append(parse_uri(item, pepper))
             else:

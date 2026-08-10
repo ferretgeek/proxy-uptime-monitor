@@ -13,11 +13,6 @@ if [[ ! -f "$archive" || "$confirmation" != "--confirm-restore" ]]; then
         '用法：sudo bash scripts/restore.sh <备份.tar.gz> --confirm-restore' >&2
     exit 2
 fi
-if tar -tzf "$archive" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then
-    printf '备份包包含不安全路径。\n' >&2
-    exit 3
-fi
-
 temporary_directory="$(mktemp -d /tmp/airport-monitor-restore.XXXXXX)"
 cleanup() {
     if [[ "$temporary_directory" == /tmp/airport-monitor-restore.* ]] \
@@ -26,17 +21,15 @@ cleanup() {
     fi
 }
 trap cleanup EXIT
-tar -xzf "$archive" -C "$temporary_directory" \
-    --no-same-owner --no-same-permissions
-
-if [[ ! -f "$temporary_directory/monitor.db" ]] \
-    || [[ ! -f "$temporary_directory/env" ]]; then
-    printf '备份包缺少数据库或加密配置。\n' >&2
+restore_payload="$temporary_directory/payload"
+if ! python3 /opt/airport-monitor/current/scripts/restore_archive.py \
+    "$archive" "$restore_payload"; then
+    printf '备份包结构或大小不符合安全要求。\n' >&2
     exit 3
 fi
 
 integrity="$(
-    python3 - "$temporary_directory/monitor.db" <<'PY'
+    python3 - "$restore_payload/monitor.db" <<'PY'
 import sqlite3
 import sys
 
@@ -52,20 +45,17 @@ fi
 safety_backup="$(bash /opt/airport-monitor/current/scripts/backup.sh)"
 systemctl stop airport-monitor.service
 
-install -o root -g airportmon -m 0640 "$temporary_directory/env" \
+install -o root -g airportmon -m 0640 "$restore_payload/env" \
     /etc/airport-monitor/env
 rm -f -- \
     /var/lib/airport-monitor/monitor.db-wal \
     /var/lib/airport-monitor/monitor.db-shm
 install -o airportmon -g airportmon -m 0600 \
-    "$temporary_directory/monitor.db" /var/lib/airport-monitor/monitor.db
+    "$restore_payload/monitor.db" /var/lib/airport-monitor/monitor.db
 
 systemctl start airport-monitor.service
-set -a
-# shellcheck disable=SC1091
-. /etc/airport-monitor/env
-set +a
-health_url="http://${AIRPORT_BIND_HOST}:${AIRPORT_PORT}/api/health"
+health_url="$(python3 /opt/airport-monitor/current/scripts/safe_environment.py \
+    health-url /etc/airport-monitor/env)"
 for _attempt in {1..20}; do
     if curl --fail --silent --show-error \
         --connect-timeout 2 --max-time 5 "$health_url" >/dev/null; then

@@ -78,7 +78,7 @@ management interface directly to the public Internet.
 ## What it does
 
 - Adds, edits, removes, enables, refreshes, and safely redacts subscriptions.
-- Parses Base64 URI lists, Clash YAML, sing-box JSON, and SS, VMess, VLESS,
+- Parses Base64 URI lists, bounded Clash YAML, sing-box JSON, and SS, VMess, VLESS,
   Trojan, Hysteria2, TUIC, SOCKS, HTTP, and AnyTLS nodes.
 - Checks an entire subscription, all nodes, a batch, or one selected node.
 - Checks Google, ChatGPT, and Grok by default, with X, Claude, Wikipedia,
@@ -105,7 +105,7 @@ management interface directly to the public Internet.
   seconds. Missing sensors are reported explicitly.
 - Resolves the exit location through the node and updates the stored redacted
   result only when at least two independent public sources agree.
-- Supports task pausing, manual retests, safe CSV export, and generic Webhook
+- Supports task pausing, manual retests, formula-neutralizing CSV export, and generic Webhook
   notifications.
 - Tracks the monitor's network-link state every 30 seconds, pauses node blame
   while the monitor is offline, and runs a full recovery check after reconnect.

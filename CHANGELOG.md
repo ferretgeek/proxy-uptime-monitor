@@ -2,6 +2,17 @@
 
 本项目遵循语义化版本。只记录公开版本中对使用者有影响的变化。
 
+## Unreleased
+
+- 安全强化：维护脚本不再以 shell 载入环境文件，恢复包改为允许清单解包，并以
+  低权限账户执行数据库备份与升级验证。
+- 为状态变更请求增加解析前正文上限，为 YAML 别名图增加事件、深度与展开预算，
+  并在 CSV 导出边界中和电子表格公式前缀。
+- Security hardening: maintenance scripts now parse environment files as data,
+  restore archives use allowlisted extraction, and database operations run as the
+  service account. Request bodies, YAML expansion, and CSV formula prefixes are
+  now bounded at their respective trust boundaries.
+
 ## 2.4.1 - 2026-08-09
 
 - 将中英文 README 标题统一为“项目名 — 核心功能”，直接说明这是代理节点可用性监控工具。

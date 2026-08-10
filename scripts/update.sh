@@ -66,14 +66,16 @@ install -d -m 0700 \
     "$temporary_directory/data" \
     "$temporary_directory/run" \
     "$temporary_directory/log"
-set -a
-# shellcheck disable=SC1091
-. /etc/airport-monitor/env
-set +a
-AIRPORT_DATA_DIR="$temporary_directory/data" \
-AIRPORT_RUNTIME_DIR="$temporary_directory/run" \
-AIRPORT_LOG_DIR="$temporary_directory/log" \
+chown -R airportmon:airportmon "$temporary_directory"
 PYTHONPATH="$release_directory" \
+    python3 "$release_directory/scripts/safe_environment.py" exec \
+    /etc/airport-monitor/env -- \
+    runuser --user airportmon --preserve-environment -- \
+    env \
+    AIRPORT_DATA_DIR="$temporary_directory/data" \
+    AIRPORT_RUNTIME_DIR="$temporary_directory/run" \
+    AIRPORT_LOG_DIR="$temporary_directory/log" \
+    PYTHONPATH="$release_directory" \
     "$release_directory/.venv/bin/python" -m app.cli verify >/dev/null
 
 backup_archive="$(bash "$release_directory/scripts/backup.sh")"
@@ -114,7 +116,8 @@ systemctl enable --now airport-monitor-health.timer >/dev/null
 systemctl enable --now airport-monitor-storage.timer >/dev/null
 /usr/bin/python3 /usr/local/lib/airport-monitor/storage_guard.py
 
-health_url="http://${AIRPORT_BIND_HOST}:${AIRPORT_PORT}/api/health"
+health_url="$(python3 "$release_directory/scripts/safe_environment.py" \
+    health-url /etc/airport-monitor/env)"
 for _attempt in {1..20}; do
     if curl --fail --silent --show-error \
         --connect-timeout 2 --max-time 5 "$health_url" >/dev/null; then

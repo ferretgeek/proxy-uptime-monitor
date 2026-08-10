@@ -168,12 +168,11 @@ install -o root -g root -m 0644 \
     "$release_directory/deploy/logrotate.conf" \
     /etc/logrotate.d/airport-monitor
 
-set -a
-# shellcheck disable=SC1090
-. "$environment_file"
-set +a
 printf '%s\n' "$admin_password" \
-    | runuser --user airportmon --preserve-environment -- \
+    | PYTHONPATH="$release_directory" python3 \
+        "$release_directory/scripts/safe_environment.py" exec \
+        "$environment_file" -- \
+        runuser --user airportmon --preserve-environment -- \
         env "PYTHONPATH=$release_directory" \
         "$release_directory/.venv/bin/python" -m app.cli init-admin \
         --username admin

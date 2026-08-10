@@ -73,7 +73,7 @@ sudo bash scripts/install.sh \
 ## 已实现能力
 
 - 订阅添加、编辑、删除、启停、自动刷新与安全脱敏。
-- Base64 URI、Clash YAML、sing-box JSON，以及 SS、VMess、VLESS、Trojan、
+- Base64 URI、受事件数/深度/展开量保护的 Clash YAML、sing-box JSON，以及 SS、VMess、VLESS、Trojan、
   Hysteria2、TUIC、SOCKS、HTTP 和 AnyTLS 节点解析。
 - 整份订阅、全部节点、批量节点和指定单节点检测。
 - 默认检测 Google、ChatGPT 和 Grok；X、Claude、Wikipedia、GitHub、Node.js、
@@ -106,7 +106,7 @@ sudo bash scripts/install.sh \
   手机布局下仍完整换行。
 - 通过节点自身代理获取出口 IP，并由 Cloudflare Trace、ipwho.is、ipapi.co
   多来源核对；至少两个来源一致才更新，只保存脱敏 IP。
-- 任务暂停、手动复测、安全 CSV 导出、通用 Webhook 通知。
+- 任务暂停、手动复测、会中和公式前缀的安全 CSV 导出、通用 Webhook 通知。
 - 每 30 秒记录监测机网口状态；网线断开时暂停节点归责，恢复后清理旧等待状态
   并立即全量复测。监测机离线时段独立计入覆盖信息，不计作节点成功或失败。
 - SQLite WAL、查询索引、20 天原始数据、180 天小时聚合和自动清理。

@@ -17,6 +17,15 @@ from .locations import infer_location, normalize_detected_country_code
 from .targets import DEFAULT_TARGET_KEYS, normalize_target_keys
 
 
+def _safe_csv_cell(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    candidate = value.lstrip(" \t\r\n")
+    if candidate.startswith(("=", "+", "-", "@")):
+        return "'" + value
+    return value
+
+
 def utc_now() -> datetime:
     return datetime.now(UTC)
 
@@ -784,6 +793,8 @@ class Database:
         for row in rows:
             writer.writerow(
                 [
+                    _safe_csv_cell(value)
+                    for value in (
                     row["name"],
                     row["protocol"],
                     row["endpoint_mask"],
@@ -801,6 +812,7 @@ class Database:
                     row["location_source"],
                     row["exit_ip_mask"],
                     row["subscription_name"],
+                    )
                 ]
             )
         return ("\ufeff" + buffer.getvalue()).encode("utf-8")

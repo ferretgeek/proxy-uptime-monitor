@@ -26,12 +26,13 @@ cleanup() {
 trap cleanup EXIT
 
 chmod 0700 "$work_directory"
+chown root:airportmon "$work_directory"
+chmod 0730 "$work_directory"
 
-set -a
-# shellcheck disable=SC1091
-. /etc/airport-monitor/env
-set +a
-PYTHONPATH=/opt/airport-monitor/current \
+PYTHONPATH=/opt/airport-monitor/current python3 \
+    /opt/airport-monitor/current/scripts/safe_environment.py exec \
+    /etc/airport-monitor/env -- \
+    runuser --user airportmon --preserve-environment -- \
     /opt/airport-monitor/current/.venv/bin/python -m app.cli backup \
     "$work_directory/monitor.db" >/dev/null
 

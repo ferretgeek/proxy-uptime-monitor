@@ -7,8 +7,7 @@ import logging.handlers
 import mimetypes
 from contextlib import asynccontextmanager
 from datetime import timedelta
-from pathlib import Path
-from typing import Any, Annotated, Literal
+from typing import Annotated, Any, Literal
 from urllib.parse import urlsplit
 
 import uvicorn
@@ -20,12 +19,11 @@ from fastapi import (
     Query,
     Request,
     Response,
-    status,
 )
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, Field
 
 from . import __version__
@@ -33,8 +31,8 @@ from .analytics import (
     dashboard,
     latency_summary,
     list_events,
-    node_page,
     node_detail,
+    node_page,
     node_trend,
     system_status,
     trend,
@@ -44,6 +42,7 @@ from .database import Database, iso_now, parse_time, utc_now
 from .engine import MonitorEngine
 from .executor import NodeExecutor
 from .locations import COUNTRIES, normalize_country_code
+from .request_limits import RequestBodyLimitMiddleware
 from .security import (
     LoginRateLimiter,
     SecretBox,
@@ -56,7 +55,6 @@ from .security import (
 )
 from .storage import StorageManager
 from .targets import public_target_catalog
-
 
 SESSION_COOKIE = "airport_session"
 CSRF_COOKIE = "airport_csrf"
@@ -129,6 +127,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(CONFIG.allowed_hosts))
+app.add_middleware(RequestBodyLimitMiddleware)
 
 
 @app.middleware("http")

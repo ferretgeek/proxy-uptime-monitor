@@ -1,5 +1,5 @@
 [Unit]
-Description=定时检查航迹监测平台并在连续失败时恢复
+Description=定时检查节点体检平台并在连续失败时恢复
 
 [Timer]
 OnBootSec=3min

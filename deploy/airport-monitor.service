@@ -1,5 +1,5 @@
 [Unit]
-Description=航迹机场订阅实际可用度监测平台
+Description=代理节点实际可用度监测平台
 After=network-online.target
 Wants=network-online.target
 StartLimitIntervalSec=300

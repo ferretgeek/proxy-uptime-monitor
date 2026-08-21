@@ -119,7 +119,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="航迹机场订阅实际可用度监测平台",
+    title="代理节点实际可用度监测平台",
     version=__version__,
     docs_url=None,
     redoc_url=None,

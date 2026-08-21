@@ -1,35 +1,44 @@
-# Trailmark / 航迹 — Proxy Node Availability Monitor
+![Proxy uptime monitor — probe through the real route before calling it healthy](docs/images/social-preview.png)
 
-[简体中文](README.md) · [English](README_EN.md)
+# Proxy uptime monitor
 
-[![CI](https://github.com/ferretgeek/Trailmark/actions/workflows/ci.yml/badge.svg)](https://github.com/ferretgeek/Trailmark/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/ferretgeek/Trailmark/actions/workflows/codeql.yml/badge.svg)](https://github.com/ferretgeek/Trailmark/actions/workflows/codeql.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-2f855a.svg)](LICENSE)
+[中文](README.md) · English
+
+[![CI](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/codeql.yml/badge.svg)](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/codeql.yml)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2f855a.svg)](LICENSE)
 
-![Trailmark interface and node-monitoring overview](docs/images/social-preview.png)
+> Not a ping panel. It builds a real proxy route and checks whether the destination actually loads.
 
-Trailmark is not a ping dashboard. Every check launches a short-lived, isolated
-sing-box tunnel for the selected node and reaches the configured destinations
-through that tunnel. DNS, TCP, TLS, redirects, response time, and page features
-are evaluated together to determine whether the destination was actually
-reached.
+## Why this exists
 
-Current open-source version: `2.4.1`. Original project code is released under
-the [MIT License](LICENSE). Third-party icons, flags, and service marks retain
-their own licenses or rights; see [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+You have dozens of nodes in a subscription. The panel shows all green. ChatGPT still won't open.
 
-> This repository contains source code, migrations, tests, deployment scripts,
-> and sanitized documentation only. It contains no live subscription, node
-> credential, administrator password, database, log, or server connection data.
+The failure is rarely "the node is dead" — it's one specific layer: DNS is poisoned, the TLS handshake fails, the connection works but the destination refuses it, or a page comes back and it's a challenge wall. Typical speed-test tools check whether TCP connects and how much latency there is. **That layer working says nothing about whether the service you want is usable.**
 
-## Quick start
+So this tool works differently: **for every node it checks, it spins up a short-lived, isolated sing-box route, sends the request through it**, and judges the result from DNS, TCP, TLS, redirects, response timing, and page content — so you learn *which layer* broke.
 
-### Run locally
+## Interface
 
-Local mode binds only to `localhost` and stores its data, logs, and generated
-runtime secrets in the ignored `.local-run/` directory. Install the Python
-dependencies and sing-box, then run:
+![Interface generated from synthetic node data](docs/images/dashboard.png)
+
+The preview uses node, subscription, and status data generated from scratch — no real subscription, exit address, account, server, or device identity.
+
+## What it does
+
+- **Subscription management** — add, edit, delete, enable/disable, auto-refresh, with automatic redaction on display.
+- **Understands the formats** — Base64 URI, Clash YAML (with event-count, depth, and expansion guards), and sing-box JSON; node protocols cover SS, VMess, VLESS, Trojan, Hysteria2, TUIC, SOCKS, HTTP, and AnyTLS.
+- **Check at any granularity** — a whole subscription, all nodes, a selected batch, or one specific node.
+- **Configurable destinations** — Google, ChatGPT, and Grok by default; X, Claude, Wikipedia, GitHub, Node.js, Python, Perplexity, YouTube, Nexus Mods, Hugging Face, Cloudflare, and Linux.do are opt-in. Upgrades never change your existing selection.
+- **Won't melt the machine** — timeouts, retries, random jitter, dynamic concurrency, and a bounded queue; offline nodes back off instead of retrying forever.
+- **Legible conclusions** — health scores and uptime are expressed as explicit numbers, icons, labels, and horizontal progress, **not vague colored dots.**
+
+## Running locally
+
+Local mode binds `localhost` only, keeps data, logs, and runtime keys in a git-ignored `.local-run/`, and touches no system services.
+
+Install the Python dependencies and sing-box, then:
 
 ```powershell
 python -m venv .venv
@@ -37,17 +46,15 @@ python -m venv .venv
 .\.venv\Scripts\python.exe scripts\run-local.py --sing-box "C:\path\to\sing-box.exe"
 ```
 
-On Linux or macOS, use
-`.venv/bin/python scripts/run-local.py --sing-box /path/to/sing-box`. The first
-launch asks you to create a local administrator with a password of at least 14
-characters. Copy the entire `.local-run/` directory when migrating local data;
-never commit or share it.
+On Linux / macOS use `.venv/bin/python scripts/run-local.py --sing-box /path/to/sing-box`.
 
-### Deploy to a Linux server
+First launch creates a local admin password of at least 14 characters in the terminal. To migrate data, copy the whole `.local-run/` directory — **never commit or share it.**
 
-Production deployment targets a Linux host with `systemd`. The installer
-creates a dedicated system user, hardened services, health checks, and storage
-guards. Build a source archive and a protected administrator-password file:
+## Linux server deployment
+
+Production targets a Linux host with `systemd`. The installer creates a dedicated system user, a restricted unit, health checks, and capacity guards.
+
+Build the release archive and admin password file from the source root:
 
 ```bash
 tar -czf /tmp/airport-monitor-release.tar.gz \
@@ -58,98 +65,55 @@ umask 077
 openssl rand -base64 24 > /tmp/airport-monitor-admin-password
 ```
 
-Install it on the target host:
+Then install:
 
 ```bash
 sudo bash scripts/install.sh \
   --archive /tmp/airport-monitor-release.tar.gz \
-  --bind-host <SERVER_LAN_IP> \
+  --bind-host <server-lan-ip> \
   --admin-password-file /tmp/airport-monitor-admin-password \
   --port 18080
 ```
 
-Transfer the generated password to a password manager after the first successful
-sign-in, then remove the temporary server file. The Windows helper
-`scripts/New-DeploymentCredential.ps1` can also generate a strong password and
-a restricted credential file. See [Deployment and Operations](docs/部署与运维.md)
-for installation, updates, backup, restore, and removal. Do not expose the
-management interface directly to the public Internet.
+Log in **immediately** using that password file, move the password into a password manager, confirm you can sign in, and only then delete the temporary file from the server. On Windows, `scripts/New-DeploymentCredential.ps1` generates a random password and a restricted credential file.
 
-## What it does
+Full install, update, backup, restore, and uninstall procedures are in [operations](docs/部署与运维.md). **Read the [security policy](SECURITY.md) before a first public deployment and confirm the bind address isn't exposed to the internet.**
 
-- Adds, edits, removes, enables, refreshes, and safely redacts subscriptions.
-- Parses Base64 URI lists, bounded Clash YAML, sing-box JSON, and SS, VMess, VLESS,
-  Trojan, Hysteria2, TUIC, SOCKS, HTTP, and AnyTLS nodes.
-- Checks an entire subscription, all nodes, a batch, or one selected node.
-- Checks Google, ChatGPT, and Grok by default, with X, Claude, Wikipedia,
-  GitHub, Node.js, Python, Perplexity, YouTube, Nexus Mods, Hugging Face,
-  Cloudflare, and Linux.do available as optional destinations.
-- Uses timeouts, retries, jitter, adaptive concurrency, and a bounded queue;
-  offline nodes continue to receive full recovery checks every ten minutes.
-- Distinguishes healthy, login-required, region-restricted, service-blocked,
-  abnormal-response, uncertain, DNS/TCP/TLS/proxy-error, and unreachable states.
-- Treats an anti-bot challenge as evidence that the destination responded; it
-  does not create a misleading separate health state.
-- Tracks continuous uptime, time-weighted 24-hour/7-day/30-day availability,
-  coverage, confidence, average/P50/P95 latency, service status, ranking,
-  trends, events, and host resource metrics.
-- Separates full **node → website** latency from **local monitor → node**
-  protocol-path latency. The latter performs three complete proxy requests to
-  a lightweight `204` destination and uses the median; a raw CDN or Anycast TCP
-  handshake never replaces the product metric.
-- Provides dense node tables, country and flag views, search, filters,
-  pagination, batch retesting, direct enable/disable controls, independent
-  trend expansion, and persistent resizable desktop columns.
-- Shows enabled nodes only on the dashboard and samples whole-host CPU, memory,
-  system-disk use, CPU Package temperature, and SMART disk temperature every 60
-  seconds. Missing sensors are reported explicitly.
-- Resolves the exit location through the node and updates the stored redacted
-  result only when at least two independent public sources agree.
-- Supports task pausing, manual retests, formula-neutralizing CSV export, and generic Webhook
-  notifications.
-- Tracks the monitor's network-link state every 30 seconds, pauses node blame
-  while the monitor is offline, and runs a full recovery check after reconnect.
-- Uses SQLite WAL, query indexes, 20 days of raw data, 180 days of hourly
-  aggregates, and automatic retention cleanup.
-- Enforces log and total-storage soft/hard limits from both the application and
-  independent system timers.
-- Provides three complete light themes—Sky, Jade, and Sunset—plus a deep-gray
-  dark theme from the persistent top-right global theme picker. All pages,
-  dialogs, tables, charts, and states share the same design tokens, responsive
-  behavior, keyboard focus, and reduced-motion support.
-- Protects the server with fixed 30-day sessions, CSRF defense, client binding,
-  Origin and Host validation, login throttling, explicit logout invalidation,
-  and encrypted sensitive configuration.
+## Worth noting technically
 
-## Interface preview
+**Every check is an isolated, real route.** Checking a node spins up a dedicated short-lived sing-box tunnel that is destroyed once the request completes. Nodes never share an exit, so one node's misbehavior can't contaminate another's verdict.
 
-![Trailmark desktop dashboard generated with synthetic node data](docs/images/dashboard.png)
+**Layered diagnosis instead of a boolean.** DNS resolution, TCP connect, TLS handshake, the HTTP redirect chain, response timing, and final page characteristics are evaluated separately — so a result can be "TLS fine, destination returned a challenge wall" rather than a flat "failed."
 
-The preview is generated entirely from synthetic subscriptions, nodes, and
-statuses. It contains no live subscription, exit address, account, server, or
-device identity. The application ships brand-consistent SVG and ICO browser
-icons, verified through both local and server routes.
+**Subscription parsing is defensive.** Clash YAML has event-count, nesting-depth, and expansion guards, because YAML anchor expansion can be crafted into a decompression bomb. A file fetched from a public subscription URL should not be able to take down your process.
 
-## Runtime architecture
+**Resources are fenced by cgroup.** The main process and every temporary probe process share one restricted cgroup: 75% of a single core, 768 MiB memory cap, low CPU/IO weight, reduced process priority, and at most three concurrent node checks by default. It's a long-running service and shouldn't compete with the rest of your box.
 
-Production uses one restricted `systemd` service. It does not install Docker,
-create a transparent proxy, or modify host routing, DNS, firewall rules, or
-existing services. The main process and temporary check processes share one
-restricted cgroup with conservative CPU, memory, I/O, and concurrency limits.
+**It doesn't touch the system.** One standalone `systemd` unit. No Docker, no transparent proxy, no changes to routing, DNS, firewall rules, or any existing service.
 
-| Content | Default location |
+**Sessions and sign-in are tightened.** Server-side sessions with a fixed 30-day lifetime, CSRF protection, client binding, origin and Host validation, login rate limiting, immediate invalidation on sign-out, and encrypted sensitive configuration.
+
+### File locations
+
+| Contents | Location |
 |---|---|
-| Current release | `/opt/airport-monitor/current` |
-| Versioned releases | `/opt/airport-monitor/releases` |
+| Current build | `/opt/airport-monitor/current` |
+| Release directory | `/opt/airport-monitor/releases` |
 | SQLite data | `/var/lib/airport-monitor` |
-| Encrypted configuration | `/etc/airport-monitor/env` |
+| Encrypted config | `/etc/airport-monitor/env` |
 | Application logs | `/var/log/airport-monitor` |
 | Backups | `/var/backups/airport-monitor` |
 
-The detailed security model is documented in
-[Technical and Security Design](docs/技术与安全设计.md).
+Probe methodology and security boundaries are documented in [technical and security design](docs/技术与安全设计.md).
 
-## Development verification
+## What it doesn't do
+
+- It isn't a proxy client — it never carries your browsing traffic, only temporary probe routes.
+- It doesn't supply nodes, subscriptions, or proxy service of any kind.
+- It isn't a throughput leaderboard (that's a different tool).
+- It doesn't modify system routing, DNS, or firewall rules.
+
+## Local verification
 
 ```powershell
 python -m venv .venv
@@ -157,15 +121,24 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-On Linux or macOS, replace the interpreter path with `.venv/bin/python`.
-Environment fields are documented in `.env.example`. Hardware label variables
-are display-only; live utilization and temperature values always come from the
-system sampler. Never store real credentials, subscriptions, or administrator
-passwords in source code.
+Linux / macOS:
 
-## Contributing and security
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q
+```
 
-Run the full test suite before submitting changes and never attach live
-subscriptions, node configurations, databases, logs, screenshots, or local
-credential files. See [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities
-privately according to [SECURITY.md](SECURITY.md), not in a public issue.
+Environment variables are listed in `.env.example`. `AIRPORT_HARDWARE_CPU`, `AIRPORT_HARDWARE_MEMORY`, and `AIRPORT_HARDWARE_DISK` only label the device model; live utilization and temperature still come from system sampling. **Never put real keys, subscription URLs, or admin passwords in source.**
+
+## Contributing
+
+Run the full test suite before submitting, and keep real subscriptions, node configs, databases, logs, screenshots, and env files out of the repository. See [CONTRIBUTING.md](CONTRIBUTING.md). Report security issues privately per [SECURITY.md](SECURITY.md) — never disclose exploitable details or real credentials in a public issue.
+
+## License
+
+[MIT License](LICENSE) — free to use, modify, and distribute.
+
+Third-party icons are from Lucide (license text at `app/static/vendor/LUCIDE-LICENSE.txt`); regional flags come from the MIT-licensed flag-icons (license text at `app/static/flags/LICENSE-flag-icons.txt`). Other notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+> This repository contains only source, migrations, tests, deployment scripts, and redacted documentation — no real subscriptions, node credentials, admin passwords, databases, runtime logs, or server connection details.

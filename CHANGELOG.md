@@ -23,7 +23,7 @@
 
 ## 2.4.0 - 2026-08-08
 
-- 首次公开发布“航迹 / Trailmark”完整节点观测与服务诊断能力。
+- 首次公开发布“代理节点体检 / Proxy uptime monitor”完整节点观测与服务诊断能力。
 - 新增 Windows、macOS 与 Linux 本地运行入口，并修复 Windows 子进程生命周期
   兼容性。
 - 新增天际蓝、青岚绿、霞光橙与深灰夜色四套全局主题，以及持久化主题选择。
@@ -32,7 +32,7 @@
 
 ---
 
-- First public release of the complete Trailmark node-observability dashboard.
+- First public release of the complete proxy node monitoring dashboard.
 - Added a local runner for Windows, macOS, and Linux, including Windows subprocess
   lifecycle compatibility.
 - Added four persistent global themes: Sky, Jade, Sunset, and Deep Gray.

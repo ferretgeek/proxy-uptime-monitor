@@ -45,7 +45,7 @@ $passwordFullPath = [System.IO.Path]::GetFullPath($PasswordOnlyPath)
 ) | Out-Null
 
 $credentialText = @(
-    '航迹监测平台管理员凭据'
+    '节点体检平台管理员凭据'
     ''
     '管理员账号：admin'
     "管理员密码：$password"

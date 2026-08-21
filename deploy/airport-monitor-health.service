@@ -1,5 +1,5 @@
 [Unit]
-Description=航迹监测平台健康检查
+Description=节点体检平台健康检查
 After=airport-monitor.service
 
 [Service]

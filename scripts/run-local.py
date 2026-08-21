@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""在本机数据目录启动航迹，不接触系统级部署目录。"""
+"""在本机数据目录启动服务，不接触系统级部署目录。"""
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ def _ensure_admin(database_path: Path) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="在本机安全启动航迹")
+    parser = argparse.ArgumentParser(description="在本机安全启动节点体检服务")
     parser.add_argument("--bind-host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=18080)
     parser.add_argument("--sing-box", help="sing-box 可执行文件路径")
@@ -113,7 +113,7 @@ def main() -> int:
 
     from app.main import run
 
-    print(f"航迹本地服务已准备：http://{args.bind_host}:{args.port}")
+    print(f"本地服务已准备：http://{args.bind_host}:{args.port}")
     print(f"本地数据目录：{data_root}")
     run()
     return 0

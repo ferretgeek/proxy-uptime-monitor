@@ -1,5 +1,5 @@
 [Unit]
-Description=定时执行航迹监测平台容量保护
+Description=定时执行节点体检平台容量保护
 
 [Timer]
 OnBootSec=5min

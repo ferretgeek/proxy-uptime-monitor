@@ -718,7 +718,7 @@ class MonitorEngine:
             "title": "节点异常" if event_type == "failure" else "节点恢复",
             "node": node_name,
             "time": iso_now(),
-            "source": "航迹监测平台",
+            "source": "节点体检平台",
         }
         try:
             async with httpx.AsyncClient(

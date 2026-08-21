@@ -1,6 +1,6 @@
-# 航迹维护规则
+# 代理节点体检维护规则
 
-本文件适用于“航迹 / Trailmark”项目。修改前先阅读 `README.md`、
+本文件适用于“代理节点体检 / Proxy uptime monitor”项目。修改前先阅读 `README.md`、
 `README_EN.md`、`SECURITY.md` 与 `docs/发布审计.md`。
 
 ## 产品与兼容性

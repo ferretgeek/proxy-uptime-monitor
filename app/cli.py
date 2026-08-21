@@ -52,7 +52,7 @@ def verify(config: AppConfig) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="航迹监测平台维护工具")
+    parser = argparse.ArgumentParser(description="节点体检平台维护工具")
     subparsers = parser.add_subparsers(dest="command", required=True)
     admin_parser = subparsers.add_parser("init-admin")
     admin_parser.add_argument("--username", default="admin")

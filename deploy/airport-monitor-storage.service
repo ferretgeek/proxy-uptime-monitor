@@ -1,5 +1,5 @@
 [Unit]
-Description=航迹监测平台存储容量保护
+Description=节点体检平台存储容量保护
 After=local-fs.target
 
 [Service]

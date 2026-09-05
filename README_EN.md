@@ -1,23 +1,21 @@
-![Proxy uptime monitor — probe through the real route before calling it healthy](docs/images/social-preview.png)
-
-# Proxy uptime monitor
+# Proxy Availability Monitor
 
 [中文](README.md) · English
 
-[![CI](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/codeql.yml/badge.svg)](https://github.com/ferretgeek/proxy-uptime-monitor/actions/workflows/codeql.yml)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-2f855a.svg)](LICENSE)
+Check whether your proxy nodes can reach sites such as ChatGPT and Google, and see which connection step failed.
 
-> Not a ping panel. It builds a real proxy route and checks whether the destination actually loads.
+**Requirements:** your own nodes or subscriptions, Python 3.12+, and sing-box. Run locally or deploy on Linux; no ready-made installer is published.
 
-## Why this exists
+[Run locally](#running-locally) · [Deploy on Linux](#linux-server-deployment) · [Features](#what-it-does) · [Usage and maintenance](docs/部署与运维.md)
 
-You have dozens of nodes in a subscription. The panel shows all green. ChatGPT still won't open.
+## What it does
 
-The failure is rarely "the node is dead" — it's one specific layer: DNS is poisoned, the TLS handshake fails, the connection works but the destination refuses it, or a page comes back and it's a challenge wall. Typical speed-test tools check whether TCP connects and how much latency there is. **That layer working says nothing about whether the service you want is usable.**
-
-So this tool works differently: **for every node it checks, it spins up a short-lived, isolated sing-box route, sends the request through it**, and judges the result from DNS, TCP, TLS, redirects, response timing, and page content — so you learn *which layer* broke.
+- **Check real requests:** each node gets a separate short-lived sing-box route to the target, with DNS, TCP, TLS, redirects, timing, and page characteristics evaluated separately.
+- **Manage subscriptions:** add, edit, delete, enable/disable, and auto-refresh with redacted display; check a subscription, all nodes, a selected batch, or one node.
+- **Read common formats and protocols:** Base64 URI, Clash YAML, and sing-box JSON; SS, VMess, VLESS, Trojan, Hysteria2, TUIC, SOCKS, HTTP, and AnyTLS.
+- **Choose target sites:** Google, ChatGPT, and Grok by default; X, Claude, Wikipedia, GitHub, Node.js, Python, Perplexity, YouTube, Nexus Mods, Hugging Face, Cloudflare, and Linux.do are opt-in. Upgrades preserve existing selections.
+- **Review results:** health scores, uptime, response timing, and layered diagnostics distinguish connection failures from destination challenge pages.
+- **Limit probe load:** timeouts, retries, random jitter, dynamic concurrency, a bounded queue, and offline-node backoff; Clash YAML parsing limits event count, depth, and expansion.
 
 ## Interface
 
@@ -25,20 +23,13 @@ So this tool works differently: **for every node it checks, it spins up a short-
 
 The preview uses node, subscription, and status data generated from scratch — no real subscription, exit address, account, server, or device identity.
 
-## What it does
-
-- **Subscription management** — add, edit, delete, enable/disable, auto-refresh, with automatic redaction on display.
-- **Understands the formats** — Base64 URI, Clash YAML (with event-count, depth, and expansion guards), and sing-box JSON; node protocols cover SS, VMess, VLESS, Trojan, Hysteria2, TUIC, SOCKS, HTTP, and AnyTLS.
-- **Check at any granularity** — a whole subscription, all nodes, a selected batch, or one specific node.
-- **Configurable destinations** — Google, ChatGPT, and Grok by default; X, Claude, Wikipedia, GitHub, Node.js, Python, Perplexity, YouTube, Nexus Mods, Hugging Face, Cloudflare, and Linux.do are opt-in. Upgrades never change your existing selection.
-- **Won't melt the machine** — timeouts, retries, random jitter, dynamic concurrency, and a bounded queue; offline nodes back off instead of retrying forever.
-- **Legible conclusions** — health scores and uptime are expressed as explicit numbers, icons, labels, and horizontal progress, **not vague colored dots.**
-
 ## Running locally
 
 Local mode binds `localhost` only, keeps data, logs, and runtime keys in a git-ignored `.local-run/`, and touches no system services.
 
-Install the Python dependencies and sing-box, then:
+Install Python 3.12+ and sing-box, choose **Code → Download ZIP** on the repository page, extract it, and open PowerShell in the source root. The [v2.4.1 release](https://github.com/ferretgeek/proxy-uptime-monitor/releases/tag/v2.4.1) also provides a versioned source archive, but has no installer attachment.
+
+Install Python dependencies and start the app:
 
 ```powershell
 python -m venv .venv
@@ -79,19 +70,19 @@ Log in **immediately** using that password file, move the password into a passwo
 
 Full install, update, backup, restore, and uninstall procedures are in [operations](docs/部署与运维.md). **Read the [security policy](SECURITY.md) before a first public deployment and confirm the bind address isn't exposed to the internet.**
 
-## Worth noting technically
+## Technical details
 
 **Every check is an isolated, real route.** Checking a node spins up a dedicated short-lived sing-box tunnel that is destroyed once the request completes. Nodes never share an exit, so one node's misbehavior can't contaminate another's verdict.
 
 **Layered diagnosis instead of a boolean.** DNS resolution, TCP connect, TLS handshake, the HTTP redirect chain, response timing, and final page characteristics are evaluated separately — so a result can be "TLS fine, destination returned a challenge wall" rather than a flat "failed."
 
-**Subscription parsing is defensive.** Clash YAML has event-count, nesting-depth, and expansion guards, because YAML anchor expansion can be crafted into a decompression bomb. A file fetched from a public subscription URL should not be able to take down your process.
+**Subscription parsing is defensive.** Clash YAML has event-count, nesting-depth, and expansion guards, because YAML anchor expansion can be crafted into a decompression bomb. These limits control resource use from untrusted subscription content.
 
-**Resources are fenced by cgroup.** The main process and every temporary probe process share one restricted cgroup: 75% of a single core, 768 MiB memory cap, low CPU/IO weight, reduced process priority, and at most three concurrent node checks by default. It's a long-running service and shouldn't compete with the rest of your box.
+**Probe processes have resource limits.** The main process and every temporary probe process share one restricted cgroup: 75% of a single core, 768 MiB memory cap, low CPU/IO weight, reduced process priority, and at most three concurrent node checks by default. These defaults reduce the impact of long-running monitoring on other services.
 
-**It doesn't touch the system.** One standalone `systemd` unit. No Docker, no transparent proxy, no changes to routing, DNS, firewall rules, or any existing service.
+**Deployment scope.** A standalone `systemd` service and its runtime directories. No Docker, no transparent proxy, no changes to routing, DNS, firewall rules, or any existing service.
 
-**Sessions and sign-in are tightened.** Server-side sessions with a fixed 30-day lifetime, CSRF protection, client binding, origin and Host validation, login rate limiting, immediate invalidation on sign-out, and encrypted sensitive configuration.
+**Login and session protection.** Server-side sessions with a fixed 30-day lifetime, CSRF protection, client binding, origin and Host validation, login rate limiting, immediate invalidation on sign-out, and encrypted sensitive configuration.
 
 ### File locations
 
